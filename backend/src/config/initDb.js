@@ -4,7 +4,7 @@ const mysql = require("mysql2/promise");
 
 async function ensureDatabase() {
   const host = process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : "127.0.0.1");
-  const user = process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).username : "root");
+  const user = process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER || process.env.MYSQL_USERNAME || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).username : "root");
   const dbName = process.env.DB_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).pathname.slice(1) : "bodywise_app");
   const password = process.env.DB_PASSWORD ?? process.env.MYSQLPASSWORD ?? process.env.MYSQL_PASSWORD ?? (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).password : "");
   const port = Number(process.env.DB_PORT || process.env.MYSQLPORT || process.env.MYSQL_PORT || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).port : 3306) || 3306);
