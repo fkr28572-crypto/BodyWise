@@ -13,12 +13,13 @@ function errorHandler(error, req, res, next) {
   }
 
   const status = Number.isInteger(error.status) && error.status >= 400 && error.status < 500 ? error.status : 500;
-  if (status >= 500) console.error("Request failed:", error.message);
+  console.error("API Error:", error.message || error);
+
   return res.status(status).json({
     success: false,
     error: {
       code: error.codeName || (status === 500 ? "INTERNAL_ERROR" : "REQUEST_ERROR"),
-      message: status === 500 ? "Terjadi kesalahan pada server." : error.message
+      message: error.message || "Terjadi kesalahan pada server."
     }
   });
 }
