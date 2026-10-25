@@ -57,6 +57,40 @@ app.get("/api/health", async (req, res, next) => {
     return next(error);
   }
 });
+
+app.get("/api/debug-db", async (req, res) => {
+  const host = process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST;
+  const user = process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER;
+  const database = process.env.DB_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE;
+  const port = process.env.DB_PORT || process.env.MYSQLPORT || 3306;
+  const hasPassword = Boolean(process.env.DB_PASSWORD || process.env.MYSQLPASSWORD);
+
+  if (!host || !user || !database) {
+    return res.status(200).json({
+      configured: false,
+      message: "Environment variables belum lengkap di Vercel!",
+      details: { host: Boolean(host), user: Boolean(user), database: Boolean(database), hasPassword }
+    });
+  }
+
+  try {
+    await pool.query("SELECT 1");
+    return res.status(200).json({
+      configured: true,
+      connected: true,
+      message: "Database berhasil terhubung 100%!",
+      database
+    });
+  } catch (err) {
+    return res.status(200).json({
+      configured: true,
+      connected: false,
+      message: "Gagal terhubung ke database!",
+      error: err.message,
+      code: err.code
+    });
+  }
+});
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api", require("./routes/profile.routes"));
 app.use("/api", require("./routes/dashboard.routes"));
