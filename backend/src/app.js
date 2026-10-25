@@ -69,7 +69,7 @@ app.get("/api/debug-db", async (req, res) => {
     return res.status(200).json({
       configured: false,
       message: "Environment variables belum lengkap di Vercel!",
-      details: { host: Boolean(host), user: Boolean(user), database: Boolean(database), hasPassword }
+      details: { host: Boolean(host), user: user || false, database: Boolean(database), hasPassword }
     });
   }
 
@@ -87,7 +87,13 @@ app.get("/api/debug-db", async (req, res) => {
       connected: false,
       message: "Gagal terhubung ke database!",
       error: err.message,
-      code: err.code
+      code: err.code,
+      debug: {
+        host,
+        user,
+        database,
+        passwordLength: (process.env.DB_PASSWORD || "").length
+      }
     });
   }
 });
