@@ -3,20 +3,24 @@ const path = require("path");
 const mysql = require("mysql2/promise");
 
 async function ensureDatabase() {
-  const dbName = process.env.DB_NAME || "bodywise_app";
+  const host = process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQL_HOST || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).hostname : "127.0.0.1");
+  const user = process.env.DB_USER || process.env.MYSQLUSER || process.env.MYSQL_USER || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).username : "root");
+  const dbName = process.env.DB_NAME || process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).pathname.slice(1) : "bodywise_app");
+  const password = process.env.DB_PASSWORD ?? process.env.MYSQLPASSWORD ?? process.env.MYSQL_PASSWORD ?? (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).password : "");
+  const port = Number(process.env.DB_PORT || process.env.MYSQLPORT || process.env.MYSQL_PORT || (process.env.DATABASE_URL ? new URL(process.env.DATABASE_URL).port : 3306) || 3306);
 
   let connection;
   try {
     connection = await mysql.createConnection({
-      host: process.env.DB_HOST || "127.0.0.1",
-      port: Number(process.env.DB_PORT || 3306),
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
+      host,
+      port,
+      user,
+      password,
       multipleStatements: true
     });
   } catch (err) {
     throw new Error(
-      `Tidak dapat terhubung ke MySQL server (${process.env.DB_HOST}:${process.env.DB_PORT || 3306}) dengan user '${process.env.DB_USER}': ${err.message}. Pastikan MySQL (misal XAMPP) sudah dijalankan.`
+      `Tidak dapat terhubung ke MySQL server (${host}:${port}) dengan user '${user}': ${err.message}. Pastikan MySQL sudah berjalan.`
     );
   }
 
