@@ -26,16 +26,30 @@ async function ensureDatabase() {
   }
 
   try {
-    await connection.query(
-      `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-    );
-    await connection.query(`USE \`${dbName}\``);
+    try {
+      await connection.query(
+        `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+      );
+    } catch {
+      // Some cloud databases restrict CREATE DATABASE permissions
+    }
+    try {
+      await connection.query(`USE \`${dbName}\``);
+    } catch {
+      // ignore
+    }
 
     const [tables] = await connection.query("SHOW TABLES");
     if (tables.length < 18) {
       console.log(`Menyiapkan tabel dan data awal untuk database '${dbName}'...`);
-      const sqlPath = path.resolve(__dirname, "../../../setup_database.sql");
-      if (fs.existsSync(sqlPath)) {
+      const possiblePaths = [
+        path.resolve(__dirname, "./setup_database.sql"),
+        path.resolve(__dirname, "../../../setup_database.sql"),
+        path.join(process.cwd(), "setup_database.sql"),
+        path.join(process.cwd(), "backend/src/config/setup_database.sql")
+      ];
+      const sqlPath = possiblePaths.find(p => fs.existsSync(p));
+      if (sqlPath) {
         const sql = fs.readFileSync(sqlPath, "utf8");
         await connection.query(sql);
         console.log(`Database '${dbName}' berhasil diinisialisasi secara otomatis.`);
