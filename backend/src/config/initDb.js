@@ -16,6 +16,7 @@ async function ensureDatabase() {
       port,
       user,
       password,
+      ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: true } : undefined,
       multipleStatements: true
     });
   } catch (err) {
